@@ -32,16 +32,19 @@ class OrientdbGriffonAddon {
         OrientdbConnector.instance.connect(app, config)
     }
 
+    void addonPostInit(GriffonApplication app) {
+        def types = app.config.griffon?.orientdb?.injectInto ?: ['controller']
+        for(String type : types) {
+            for(GriffonClass gc : app.artifactManager.getClassesOfType(type)) {
+                OrientdbEnhancer.enhance(gc.metaClass)
+            }
+        }
+    }
+
     def events = [
         ShutdownStart: { app ->
             ConfigObject config = OrientdbConnector.instance.createConfig(app)
             OrientdbConnector.instance.disconnect(app, config)
-        },
-        NewInstance: { klass, type, instance ->
-            def types = app.config.griffon?.orientdb?.injectInto ?: ['controller']
-            if(!types.contains(type)) return
-            def mc = app.artifactManager.findGriffonClass(klass).metaClass
-            OrientdbEnhancer.enhance(mc)
         }
     ]
 }

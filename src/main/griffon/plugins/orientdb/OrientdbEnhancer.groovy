@@ -13,19 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package griffon.plugins.orientdb
 
 import griffon.util.CallableWithArgs
 import com.orientechnologies.orient.core.db.ODatabase
 import com.orientechnologies.orient.core.record.impl.ODocument
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * @author Andres Almiray
  */
 final class OrientdbEnhancer {
+    private static final Logger LOG = LoggerFactory.getLogger(OrientdbEnhancer)
+
     private OrientdbEnhancer() {}
     
     static void enhance(MetaClass mc, OrientdbProvider provider = OrientdbDatabaseHolder.instance) {
+        if(LOG.debugEnabled) LOG.debug("Enhancing $mc with $provider")
         mc.withOrientdb = {Closure closure ->
             provider.withOrientdb('default', closure)
         }
