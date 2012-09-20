@@ -17,16 +17,17 @@
 package griffon.plugins.orientdb
 
 import com.orientechnologies.orient.core.db.ODatabase
-import com.orientechnologies.orient.core.db.object.ODatabaseObjectPool
-import com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
+import com.orientechnologies.orient.object.db.OObjectDatabaseTx
 
 import griffon.core.GriffonApplication
 import griffon.util.ApplicationHolder
 import griffon.util.CallableWithArgs
-import static griffon.util.GriffonNameUtils.isBlank
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import static griffon.util.GriffonNameUtils.isBlank
 
 /**
  * @author Andres Almiray
@@ -36,25 +37,25 @@ class OrientdbDatabaseHolder implements OrientdbProvider {
     private static final Logger LOG = LoggerFactory.getLogger(OrientdbDatabaseHolder)
     private static final Object[] LOCK = new Object[0]
     private final Map<String, ConfigObject> configurations = [:]
-  
+
     String[] getDatabaseNames() {
         List<String> databaseNames = [].addAll(configurations.keySet())
         databaseNames.toArray(new String[databaseNames.size()])
     }
 
     ODatabase getDatabase(String databaseName = 'default') {
-        if(isBlank(databaseName)) databaseName = 'default'
+        if (isBlank(databaseName)) databaseName = 'default'
         acquireDatabase(retrieveConfiguration(databaseName))
     }
 
     void setDatabase(String databaseName = 'default', ConfigObject config) {
-        if(isBlank(databaseName)) databaseName = 'default'
-        storeConfiguration(databaseName, config)       
+        if (isBlank(databaseName)) databaseName = 'default'
+        storeConfiguration(databaseName, config)
     }
 
     Object withOrientdb(String databaseName = 'default', Closure closure) {
         ODatabase database = fetchDatabase(databaseName)
-        if(LOG.debugEnabled) LOG.debug("Executing statement on database '$databaseName'")
+        if (LOG.debugEnabled) LOG.debug("Executing statement on database '$databaseName'")
         try {
             return closure(databaseName, database)
         } finally {
@@ -64,7 +65,7 @@ class OrientdbDatabaseHolder implements OrientdbProvider {
 
     public <T> T withOrientdb(String databaseName = 'default', CallableWithArgs<T> callable) {
         ODatabase database = fetchDatabase(databaseName)
-        if(LOG.debugEnabled) LOG.debug("Executing statement on database '$databaseName'")
+        if (LOG.debugEnabled) LOG.debug("Executing statement on database '$databaseName'")
         callable.args = [databaseName, database] as Object[]
         try {
             return callable.call()
@@ -72,47 +73,49 @@ class OrientdbDatabaseHolder implements OrientdbProvider {
             database.close()
         }
     }
-    
+
     boolean isDatabaseConnected(String databaseName) {
-        if(isBlank(databaseName)) databaseName = 'default'
+        if (isBlank(databaseName)) databaseName = 'default'
         retrieveConfiguration(databaseName) != null
     }
-    
+
     void disconnectDatabase(String databaseName) {
-        if(isBlank(databaseName)) databaseName = 'default'
-        storeConfiguration(databaseName, null)        
+        if (isBlank(databaseName)) databaseName = 'default'
+        storeConfiguration(databaseName, null)
     }
 
     private ODatabase fetchDatabase(String databaseName) {
-        if(isBlank(databaseName)) databaseName = 'default'
+        if (isBlank(databaseName)) databaseName = 'default'
         ODatabase database = acquireDatabase(retrieveConfiguration(databaseName))
-        if(database == null) {
+        if (database == null) {
             GriffonApplication app = ApplicationHolder.application
             ConfigObject config = OrientdbConnector.instance.createConfig(app)
             database = OrientdbConnector.instance.connect(app, config, databaseName)
         }
-        
-        if(database == null) {
+
+        if (database == null) {
             throw new IllegalArgumentException("No such orientdb database configuration for name $databaseName")
         }
         database
     }
 
     private ConfigObject retrieveConfiguration(String databaseName) {
-        synchronized(LOCK) {
+        synchronized (LOCK) {
             configurations[databaseName]
         }
     }
 
     private void storeConfiguration(String databaseName, ConfigObject config) {
-        synchronized(LOCK) {
+        synchronized (LOCK) {
             configurations[databaseName] = config
         }
     }
 
     private ODatabase acquireDatabase(ConfigObject config) {
-        if(config == null) return null
-        def pool = config.type == 'object'? ODatabaseObjectPool.global() : ODatabaseDocumentPool.global()
-        pool.acquire(config.url, config.username, config.password)
+        if (config == null) return null
+        ODatabase db = config.type == 'object' ? new OObjectDatabaseTx(config.url) : new ODatabaseDocumentTx(config.url)
+        if (!db.exists()) db.create()
+        db.close()
+        db.open(config.username, config.password)
     }
 }

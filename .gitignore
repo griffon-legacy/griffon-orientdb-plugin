@@ -1,1 +1,7 @@
 target
+.idea
+orientdb-griffonPluginFixes.iml
+orientdb.iml
+*.ipr
+*.iws
+release_notes.md

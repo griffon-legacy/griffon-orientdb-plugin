@@ -19,9 +19,9 @@
  */
 class OrientdbGriffonPlugin {
     // the plugin version
-    String version = '0.1'
+    String version = '0.2'
     // the version or versions of Griffon the plugin is designed for
-    String griffonVersion = '0.9.5 > *'
+    String griffonVersion = '1.1.0 > *'
     // the other plugins this plugin depends on
     Map dependsOn = [:]
     // resources that are included in plugin packaging
@@ -59,24 +59,25 @@ Upon installation the plugin will generate the following artifacts in `$appdir/g
  * BootstrapOrientdb.groovy - defines init/destroy hooks for data to be manipulated during app startup/shutdown.
 
 A new dynamic method named `withOrientdb` will be injected into all controllers,
-giving you access to either a `com.orientechnologies.orient.core.db.object.ODatabaseObjectTx` or 
+giving you access to either a `com.orientechnologies.orient.object.db.OObjectDatabaseTx` or
 `com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx` object, with which you'll be able
 to make calls to the database. Remember to make all database calls off the EDT
 otherwise your application may appear unresponsive when doing long computations
 inside the EDT.
+
 This method is aware of multiple databases. If no databaseName is specified when calling
 it then the default database will be selected. Here are two example usages, the first
 queries against the default database while the second queries a database whose name has
 been configured as 'internal'
 
-	package sample
-	class SampleController {
-	    def queryAllDatabases = {
-	        withOrientdb { databaseName, database -> ... }
-	        withOrientdb('internal') { databaseName, database -> ... }
-	    }
-	}
-	
+    package sample
+    class SampleController {
+        def queryAllDatabases = {
+            withOrientdb { databaseName, database -> ... }
+            withOrientdb('internal') { databaseName, database -> ... }
+        }
+    }
+
 This method is also accessible to any component through the singleton `griffon.plugins.orientdb.OrientdbConnector`.
 You can inject these methods to non-artifacts via metaclasses. Simply grab hold of a particular metaclass and call
 `OrientdbEnhancer.enhance(metaClassInstance)`.
@@ -119,11 +120,11 @@ implies this is the database used by default, however you can configure named da
 by adding a new config block. For example connecting to a database whose name is 'internal'
 can be done in this way
 
-	databases {
-	    internal {
-		    url = 'local:/orient/databases/internal'
-		}
-	}
+    databases {
+        internal {
+            url = 'local:/orient/databases/internal'
+        }
+    }
 
 This block can be used inside the `environments()` block in the same way as the
 default database block is used.
@@ -150,9 +151,9 @@ fails regardless of the arguments it receives
 
     class MyOrientdbProvider implements OrientdbProvider {
         Object withOrientdb(String serverName = 'default', Closure closure) { null }
-        public <T> T withOrientdb(String serverName = 'default', CallableWithArgs<T> callable) { null }      
+        public <T> T withOrientdb(String serverName = 'default', CallableWithArgs<T> callable) { null }
     }
-    
+
 This implementation may be used in the following way
 
     class MyServiceTests extends GriffonUnitTestCase {

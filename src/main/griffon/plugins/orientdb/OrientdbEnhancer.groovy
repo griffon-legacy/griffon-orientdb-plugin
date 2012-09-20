@@ -29,7 +29,7 @@ final class OrientdbEnhancer {
     private static final Logger LOG = LoggerFactory.getLogger(OrientdbEnhancer)
 
     private OrientdbEnhancer() {}
-    
+
     static void enhance(MetaClass mc, OrientdbProvider provider = OrientdbDatabaseHolder.instance) {
         if(LOG.debugEnabled) LOG.debug("Enhancing $mc with $provider")
         mc.withOrientdb = {Closure closure ->
@@ -54,11 +54,11 @@ final class OrientdbEnhancer {
             closure()
             delegate.commit()
         }
-        
+
         ODocument.metaClass.propertyMissing = { String propertyName ->
             delegate.field(propertyName)
         }
-        
+
         ODocument.metaClass.propertyMissing = { String propertyName, value ->
             delegate.field(propertyName, value)
         }

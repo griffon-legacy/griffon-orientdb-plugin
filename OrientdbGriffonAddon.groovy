@@ -41,7 +41,7 @@ class OrientdbGriffonAddon {
         }
     }
 
-    def events = [
+    Map events = [
         ShutdownStart: { app ->
             ConfigObject config = OrientdbConnector.instance.createConfig(app)
             OrientdbConnector.instance.disconnect(app, config)

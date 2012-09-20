@@ -9,11 +9,12 @@ griffon.project.dependency.resolution = {
         flatDir name: "${pluginName}LibDir", dirs: ["${basePath}lib"]
     }
     dependencies {
-        String orientVersion = '1.0rc8'
+        String orientVersion = '1.1.0'
         
         compile "com.orientechnologies:orient-commons:$orientVersion",
                 "com.orientechnologies:orientdb-core:$orientVersion",
-                "com.orientechnologies:orientdb-client:$orientVersion"
+                "com.orientechnologies:orientdb-client:$orientVersion",
+                "com.orientechnologies:orientdb-object:$orientVersion"
     }
 }
 

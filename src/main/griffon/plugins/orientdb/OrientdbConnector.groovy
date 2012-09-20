@@ -17,13 +17,14 @@
 package griffon.plugins.orientdb
 
 import com.orientechnologies.orient.core.db.ODatabase
-import com.orientechnologies.orient.core.db.object.ODatabaseObjectPool
-import com.orientechnologies.orient.core.db.document.ODatabaseDocumentPool
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
+import com.orientechnologies.orient.object.db.OObjectDatabaseTx
 
 import griffon.core.GriffonApplication
 import griffon.util.Environment
 import griffon.util.Metadata
 import griffon.util.CallableWithArgs
+import griffon.util.ConfigUtils
 
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -48,8 +49,7 @@ final class OrientdbConnector implements OrientdbProvider {
     // ======================================================
 
     ConfigObject createConfig(GriffonApplication app) {
-        def databaseClass = app.class.classLoader.loadClass('OrientdbConfig')
-        new ConfigSlurper(Environment.current.name).parse(databaseClass)
+        ConfigUtils.loadConfigWithI18n('OrientdbConfig')
     }
 
     private ConfigObject narrowConfig(ConfigObject config, String databaseName) {
@@ -90,9 +90,11 @@ final class OrientdbConnector implements OrientdbProvider {
         }
         config.username = config.username ?: 'guest'
         config.password = config.password ?: 'guest'
-        
-        def pool = config.type == 'object'? ODatabaseObjectPool.global() : ODatabaseDocumentPool.global()
-        pool.acquire(config.url, config.username, config.password)
+
+        ODatabase db = config.type == 'object' ? new OObjectDatabaseTx(config.url) : new ODatabaseDocumentTx(config.url)
+        if (!db.exists()) db.create()
+        db.close()
+        db.open(config.username, config.password)
     }
 
     private void stopOrientdb(ConfigObject config, ODatabase database) {
