@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,35 +17,37 @@
 package griffon.plugins.orientdb
 
 import griffon.util.CallableWithArgs
-import com.orientechnologies.orient.core.db.ODatabase
-import com.orientechnologies.orient.core.record.impl.ODocument
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+
+import com.orientechnologies.orient.core.db.ODatabase
+import com.orientechnologies.orient.core.record.impl.ODocument
 
 /**
  * @author Andres Almiray
  */
 final class OrientdbEnhancer {
+    private static final String DEFAULT = 'default'
     private static final Logger LOG = LoggerFactory.getLogger(OrientdbEnhancer)
 
     private OrientdbEnhancer() {}
-
-    static void enhance(MetaClass mc, OrientdbProvider provider = OrientdbDatabaseHolder.instance) {
-        if(LOG.debugEnabled) LOG.debug("Enhancing $mc with $provider")
+    
+    static void enhance(MetaClass mc, OrientdbProvider provider = DefaultOrientdbProvider.instance) {
+        if (LOG.debugEnabled) LOG.debug("Enhancing $mc with $provider")
         mc.withOrientdb = {Closure closure ->
-            provider.withOrientdb('default', closure)
+            provider.withOrientdb(DEFAULT, closure)
         }
         mc.withOrientdb << {String databaseName, Closure closure ->
             provider.withOrientdb(databaseName, closure)
         }
         mc.withOrientdb << {CallableWithArgs callable ->
-            provider.withOrientdb('default', callable)
+            provider.withOrientdb(DEFAULT, callable)
         }
         mc.withOrientdb << {String databaseName, CallableWithArgs callable ->
             provider.withOrientdb(databaseName, callable)
         }
     }
-    
+
     static void enhanceOrient() {
         ExpandoMetaClass.enableGlobally()
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2011-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,69 +22,54 @@ import com.orientechnologies.orient.object.db.OObjectDatabaseTx
 
 import griffon.core.GriffonApplication
 import griffon.util.ApplicationHolder
-import griffon.util.CallableWithArgs
-
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
-
 import static griffon.util.GriffonNameUtils.isBlank
 
 /**
  * @author Andres Almiray
  */
-@Singleton
-class OrientdbDatabaseHolder implements OrientdbProvider {
-    private static final Logger LOG = LoggerFactory.getLogger(OrientdbDatabaseHolder)
+class DatabaseHolder {
+    private static final String DEFAULT = 'default'
     private static final Object[] LOCK = new Object[0]
     private final Map<String, ConfigObject> configurations = [:]
 
+    private static final DatabaseHolder INSTANCE
+
+    static {
+        INSTANCE = new DatabaseHolder()
+    }
+
+    static DatabaseHolder getInstance() {
+        INSTANCE
+    }
+
+    private DatabaseHolder() {}
+
     String[] getDatabaseNames() {
-        List<String> databaseNames = [].addAll(configurations.keySet())
+        List<String> databaseNames = new ArrayList().addAll(configurations.keySet())
         databaseNames.toArray(new String[databaseNames.size()])
     }
 
-    ODatabase getDatabase(String databaseName = 'default') {
-        if (isBlank(databaseName)) databaseName = 'default'
+    ODatabase getDatabase(String databaseName = DEFAULT) {
+        if (isBlank(databaseName)) databaseName = DEFAULT
         acquireDatabase(retrieveConfiguration(databaseName))
     }
 
-    void setDatabase(String databaseName = 'default', ConfigObject config) {
-        if (isBlank(databaseName)) databaseName = 'default'
+    void setDatabase(String databaseName = DEFAULT, ConfigObject config) {
+        if (isBlank(databaseName)) databaseName = DEFAULT
         storeConfiguration(databaseName, config)
     }
 
-    Object withOrientdb(String databaseName = 'default', Closure closure) {
-        ODatabase database = fetchDatabase(databaseName)
-        if (LOG.debugEnabled) LOG.debug("Executing statement on database '$databaseName'")
-        try {
-            return closure(databaseName, database)
-        } finally {
-            database.close()
-        }
-    }
-
-    public <T> T withOrientdb(String databaseName = 'default', CallableWithArgs<T> callable) {
-        ODatabase database = fetchDatabase(databaseName)
-        if (LOG.debugEnabled) LOG.debug("Executing statement on database '$databaseName'")
-        callable.args = [databaseName, database] as Object[]
-        try {
-            return callable.call()
-        } finally {
-            database.close()
-        }
-    }
-
     boolean isDatabaseConnected(String databaseName) {
-        if (isBlank(databaseName)) databaseName = 'default'
+        if (isBlank(databaseName)) databaseName = DEFAULT
         retrieveConfiguration(databaseName) != null
     }
-
+    
     void disconnectDatabase(String databaseName) {
-        if (isBlank(databaseName)) databaseName = 'default'
+        if (isBlank(databaseName)) databaseName = DEFAULT
         storeConfiguration(databaseName, null)
     }
 
-    private ODatabase fetchDatabase(String databaseName) {
+    ODatabase fetchDatabase(String databaseName) {
         if (isBlank(databaseName)) databaseName = 'default'
         ODatabase database = acquireDatabase(retrieveConfiguration(databaseName))
         if (database == null) {

@@ -14,20 +14,13 @@
  * limitations under the License.
  */
 
-package griffon.plugins.orientdb;
-
-import griffon.util.CallableWithArgs;
-import groovy.lang.Closure;
+package dsld
 
 /**
  * @author Andres Almiray
  */
-public interface OrientdbProvider {
-    <R> R withOrientdb(Closure<R> closure);
 
-    <R> R withOrientdb(String databaseName, Closure<R> closure);
-
-    <R> R withOrientdb(CallableWithArgs<R> callable);
-
-    <R> R withOrientdb(String databaseName, CallableWithArgs<R> callable);
+contribute(enclosingClass(annotatedBy('griffon.plugins.orientdb.OrientdbAware'))) {
+    provider = "Orientdb DSL"
+    delegatesTo "griffon.plugins.orientdb.OrientdbContributionHandler"
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2012 the original author or authors.
+ * Copyright 2012-2013 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ includeTargets << griffonScript('_GriffonCreateArtifacts')
 argsMap = argsMap ?: [:]
 argsMap['skip-package-prompt'] = true
 
-if(!new File("${basedir}/griffon-app/conf/OrientdbConfig.groovy").exists()) {
+if (!new File("${basedir}/griffon-app/conf/OrientdbConfig.groovy").exists()) {
    createArtifact(
       name:   "OrientdbConfig",
       suffix: "",
@@ -31,7 +31,7 @@ if(!new File("${basedir}/griffon-app/conf/OrientdbConfig.groovy").exists()) {
       path:   "griffon-app/conf")
 }
 
-if(!new File("${basedir}/griffon-app/conf/BootstrapOrientdb.groovy").exists()) {
+if (!new File("${basedir}/griffon-app/conf/BootstrapOrientdb.groovy").exists()) {
    createArtifact(
       name:   "BootstrapOrientdb",
       suffix: "",

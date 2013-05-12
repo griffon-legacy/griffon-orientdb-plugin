@@ -16,18 +16,26 @@
 
 package griffon.plugins.orientdb;
 
-import griffon.util.CallableWithArgs;
-import groovy.lang.Closure;
+import com.orientechnologies.orient.core.db.ODatabase;
 
 /**
  * @author Andres Almiray
  */
-public interface OrientdbProvider {
-    <R> R withOrientdb(Closure<R> closure);
+public class DefaultOrientdbProvider extends AbstractOrientdbProvider {
+    private static final DefaultOrientdbProvider INSTANCE;
 
-    <R> R withOrientdb(String databaseName, Closure<R> closure);
+    static {
+        INSTANCE = new DefaultOrientdbProvider();
+    }
 
-    <R> R withOrientdb(CallableWithArgs<R> callable);
+    public static DefaultOrientdbProvider getInstance() {
+        return INSTANCE;
+    }
 
-    <R> R withOrientdb(String databaseName, CallableWithArgs<R> callable);
+    private DefaultOrientdbProvider() {}
+
+    @Override
+    protected ODatabase getDatabase(String databaseName) {
+        return DatabaseHolder.getInstance().fetchDatabase(databaseName);
+    }
 }

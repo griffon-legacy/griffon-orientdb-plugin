@@ -22,7 +22,11 @@ import groovy.lang.Closure;
 /**
  * @author Andres Almiray
  */
-public interface OrientdbProvider {
+public interface OrientdbContributionHandler {
+    void setOrientdbProvider(OrientdbProvider provider);
+
+    OrientdbProvider getOrientdbProvider();
+
     <R> R withOrientdb(Closure<R> closure);
 
     <R> R withOrientdb(String databaseName, Closure<R> closure);
