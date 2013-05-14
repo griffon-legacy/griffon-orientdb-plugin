@@ -19,7 +19,7 @@
  */
 class OrientdbGriffonPlugin {
     // the plugin version
-    String version = '1.0.0'
+    String version = '1.0.1'
     // the version or versions of Griffon the plugin is designed for
     String griffonVersion = '1.3.0 > *'
     // the other plugins this plugin depends on
